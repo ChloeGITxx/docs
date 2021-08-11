@@ -73,3 +73,34 @@ The compare and pull request pages use different methods to calculate the diff f
 - "[Closing a pull request](/articles/closing-a-pull-request)"
 - "[Deleting unused branches](/articles/deleting-unused-branches)"
 - "[About pull request merges](/articles/about-pull-request-merges)"
+# Version and features negotiation.
+S: PKT-LINE(version=1\0push-options atomic...)
+S: flush-pkt
+H: PKT-LINE(version=1\0push-options...)
+H: flush-pkt
+# Send commands from server to the hook.
+S: PKT-LINE(<old-oid> <new-oid> <ref>)
+S: ... ...
+S: flush-pkt
+# Send push-options only if the 'push-options' feature is enabled.
+S: PKT-LINE(push-option)
+S: ... ...
+S: flush-pkt
+# Receive result from the hook.
+# OK, run this command successfully.
+H: PKT-LINE(ok <ref>)
+# NO, I reject it.
+H: PKT-LINE(ng <ref> <reason>)
+# Fall through, let 'receive-pack' to execute it.
+H: PKT-LINE(ok <ref>)
+H: PKT-LINE(option fall-through)
+# OK, but has an alternate reference.  The alternate reference name
+# and other status can be given in option directives.
+H: PKT-LINE(ok <ref>)
+H: PKT-LINE(option refname <refname>)
+H: PKT-LINE(option old-oid <old-oid>)
+H: PKT-LINE(option new-oid <new-oid>)
+H: PKT-LINE(option forced-update)
+H: ... ...
+H: flush-pkt
+
